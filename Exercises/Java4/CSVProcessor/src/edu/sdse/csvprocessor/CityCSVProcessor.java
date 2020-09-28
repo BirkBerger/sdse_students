@@ -3,17 +3,26 @@ package edu.sdse.csvprocessor;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 
 public class CityCSVProcessor {
 	
+	List<CityRecord> cityRecords;
+	Map<String, List<CityRecord>> recordsByCityName;
+	
 	public void readAndProcess(File file) {
-		//Try with resource statement (as of Java 8)
+		cityRecords = new ArrayList<CityRecord>();
+		recordsByCityName = new HashMap<String, List<CityRecord>>();
+		
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-			//Discard header row
+
 			br.readLine();
-			
 			String line;
-			
 			while ((line = br.readLine()) != null) {
 				// Parse each line
 				String[] rawValues = line.split(",");
@@ -23,17 +32,16 @@ public class CityCSVProcessor {
 				String city = convertToString(rawValues[2]);
 				int population = convertToInt(rawValues[3]);
 				
-				System.out.println("id: " + id + ", year: " + year + ", city: " + city + ", population: " + population);
-				
-				//TODO: Extend the program to process entries!
+				CityRecord cityRecord = new CityRecord(id, year, city, population);
+				cityRecords.add(cityRecord);
+				addCityRecordToMap(cityRecord);
 			}
 		} catch (Exception e) {
 			System.err.println("An error occurred:");
 			e.printStackTrace();
 		}
+		printProcessedData();
 	}
-	
-	// A CHANGE
 	
 	private String cleanRawValue(String rawValue) {
 		return rawValue.trim();
@@ -53,6 +61,48 @@ public class CityCSVProcessor {
 		
 		return rawValue;
 	}
+	
+	private void addCityRecordToMap(CityRecord cityRecord) {
+		// if city is already in map => update records list
+		if (recordsByCityName.containsKey(cityRecord.getCity())) {
+			List<CityRecord> updatedCityRecords = recordsByCityName.get(cityRecord.getCity());
+			updatedCityRecords.add(cityRecord);
+			recordsByCityName.put(cityRecord.getCity(), updatedCityRecords);
+		} 
+		// else => create empty records list
+		else {
+			recordsByCityName.put(cityRecord.getCity(), new ArrayList<CityRecord>());
+		}
+	}
+	
+	private void printProcessedData() {
+				
+		// iterate recordsByCityName cities
+		for (Entry<String, List<CityRecord>> entry : recordsByCityName.entrySet()) {
+			
+			int entries = entry.getValue().size();
+			int minYear = entry.getValue().get(0).getYear();
+			int maxYear = entry.getValue().get(0).getYear();
+			double avePopulation = 0;
+			
+			// iterate records list
+			for (CityRecord record : entry.getValue()) {
+				if (record.getYear() < minYear) {
+					minYear = record.getYear();
+				}
+				if (record.getYear() > maxYear) {
+					maxYear = record.getYear();
+				}
+				avePopulation += record.getPoulation();
+			}
+			avePopulation /= entries;
+			
+			System.out.println(entry.getKey() + " (" + minYear + "," + maxYear + "; " + entries + " entries): " + avePopulation);
+		}
+	}
+	
+
+
 	
 	public static final void main(String[] args) {
 		CityCSVProcessor reader = new CityCSVProcessor();
