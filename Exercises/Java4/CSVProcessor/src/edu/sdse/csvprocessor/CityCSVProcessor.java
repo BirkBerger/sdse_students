@@ -33,6 +33,8 @@ public class CityCSVProcessor {
 		}
 	}
 	
+	// A CHANGE
+	
 	private String cleanRawValue(String rawValue) {
 		return rawValue.trim();
 	}
