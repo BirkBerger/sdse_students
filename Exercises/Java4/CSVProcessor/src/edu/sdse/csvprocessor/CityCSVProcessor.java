@@ -67,11 +67,13 @@ public class CityCSVProcessor {
 		if (recordsByCityName.containsKey(cityRecord.getCity())) {
 			List<CityRecord> updatedCityRecords = recordsByCityName.get(cityRecord.getCity());
 			updatedCityRecords.add(cityRecord);
-			recordsByCityName.put(cityRecord.getCity(), updatedCityRecords);
+			recordsByCityName.replace(cityRecord.getCity(), updatedCityRecords);
 		} 
 		// else => create empty records list
 		else {
-			recordsByCityName.put(cityRecord.getCity(), new ArrayList<CityRecord>());
+			List<CityRecord> newList = new ArrayList<CityRecord>();
+			newList.add(cityRecord);
+			recordsByCityName.put(cityRecord.getCity(), newList);
 		}
 	}
 	
